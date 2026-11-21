@@ -1,0 +1,11 @@
+{
+  "name": "latte-lattice-3d",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Kinetic WebGL cafe diorama with a deterministic pure-JS geometry engine, OBJ/STL export and auditable scene diagnostics.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test.js ui.test.js"
+  },
+  "license": "MIT"
+}

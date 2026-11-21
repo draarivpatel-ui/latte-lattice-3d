@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="LatteLattice 3D, an interactive WebGL cafe diorama with a kinetic espresso machine, planetary grinder, and procedural crystal garden." />
+<title>LatteLattice 3D | A Kinetic Cafe Diorama</title>
+<link rel="icon" href="data:," />
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<div id="app">
+  <canvas id="scene" tabindex="0" aria-label="Interactive 3D cafe diorama"></canvas>
+
+  <div id="loading" role="status" aria-live="polite">
+    <div class="loader-cup"><span></span></div>
+    <p>Warming the machine</p>
+  </div>
+
+  <header id="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <h1>LatteLattice <span>3D</span></h1>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button id="btn-night" class="pill" type="button" aria-pressed="false" title="Toggle cozy day / night lighting (L)">
+        <span class="pill-ico">☾</span> <span id="night-label">Night mode</span>
+      </button>
+      <button id="btn-sound" class="pill" type="button" aria-pressed="false" title="Unmute ambient cafe sound (requires a click)">
+        <span class="pill-ico">♪</span> <span id="sound-label">Sound off</span>
+      </button>
+      <button id="btn-help" class="pill" type="button" title="Show controls (H)">?</button>
+    </div>
+  </header>
+
+  <aside id="panel" aria-label="Scene controls">
+    <h2>The Workshop</h2>
+
+    <section class="control-group">
+      <div class="group-head">
+        <span class="num">01</span><h3>Espresso machine</h3>
+      </div>
+      <p class="hint">Click the red steam valve in the scene, or use the button below.</p>
+      <button id="btn-steam" class="primary" type="button" aria-pressed="false">Open steam valve</button>
+      <div class="readout"><span>Steam pressure</span><b id="pressure">0.00 bar</b></div>
+      <div class="bar"><i id="pressure-bar"></i></div>
+    </section>
+
+    <section class="control-group">
+      <div class="group-head">
+        <span class="num">02</span><h3>Planetary grinder</h3>
+      </div>
+      <label class="row" for="grind-speed">
+        <span>Grind speed</span><b id="grind-speed-val">0.60</b>
+      </label>
+      <input id="grind-speed" type="range" min="0" max="2" step="0.05" value="0.6" />
+    </section>
+
+    <section class="control-group">
+      <div class="group-head">
+        <span class="num">03</span><h3>Latte art</h3>
+      </div>
+      <label class="row" for="latte-pattern"><span>Pour style</span></label>
+      <select id="latte-pattern">
+        <option value="rosetta">Rosetta</option>
+        <option value="heart">Heart</option>
+        <option value="tulip">Tulip</option>
+        <option value="swirl">Swirl</option>
+      </select>
+      <label class="row" for="latte-swirl"><span>Surface motion</span><b id="latte-swirl-val">on</b></label>
+      <input id="latte-swirl" type="checkbox" checked />
+    </section>
+
+    <section class="control-group">
+      <div class="group-head">
+        <span class="num">04</span><h3>Crystal garden</h3>
+      </div>
+      <button id="btn-regrow" class="ghost" type="button">Regrow crystals</button>
+      <label class="row" for="crystal-seed"><span>Scene seed</span><b id="crystal-seed-val">2026</b></label>
+      <input id="crystal-seed" type="number" min="0" max="999999" step="1" value="2026" />
+      <div class="readout"><span>Active facets</span><b id="facet-count">0</b></div>
+      <div class="readout"><span>Vertices / triangles</span><b id="mesh-count">0 / 0</b></div>
+    </section>
+
+    <section class="control-group">
+      <div class="group-head">
+        <span class="num">05</span><h3>Scene diagnostics</h3>
+      </div>
+      <p class="hint">Deterministic measurements of the generated geometry and kinematics.</p>
+      <div class="readout"><span>Frame rate</span><b id="fps">0.0 fps</b></div>
+      <div class="readout"><span>Surface area</span><b id="surface-area">0.000000</b></div>
+      <div class="readout"><span>Enclosed volume</span><b id="volume">0.000000</b></div>
+      <div class="readout"><span>Gear ratio / ring teeth</span><b id="gear-ratio">1.50 / 42</b></div>
+      <div class="readout"><span>Mean foam mix</span><b id="foam-mix">0.000000</b></div>
+      <div class="readout"><span>Field signature</span><b id="field-signature">0</b></div>
+      <div class="readout"><span>Degenerate facets</span><b id="degenerate-facets">0</b></div>
+      <button id="btn-telemetry" class="ghost" type="button">Copy diagnostics JSON</button>
+      <div class="export-row" style="margin-top:8px">
+        <button id="btn-pause" class="ghost" type="button" aria-pressed="false">Pause motion</button>
+        <button id="btn-reset-cam" class="ghost" type="button">Reset camera</button>
+      </div>
+      <label class="row" for="keys-enabled"><span>Keyboard shortcuts</span><b id="keys-enabled-val">on</b></label>
+      <input id="keys-enabled" type="checkbox" checked />
+    </section>
+
+    <section class="control-group">
+      <div class="group-head">
+        <span class="num">06</span><h3>Export mesh</h3>
+      </div>
+      <p class="hint">Download the generated scene as a 3D model.</p>
+      <div class="export-row">
+        <button id="btn-obj" class="ghost" type="button">.OBJ</button>
+        <button id="btn-stl" class="ghost" type="button">.STL</button>
+      </div>
+    </section>
+
+    <p class="footnote">Built with Three.js and a deterministic pure-JS geometry engine. Every readout is computed from the seed and exported geometry; no runtime dependencies.</p>
+  </aside>
+
+  <div id="hint-bar">
+    <span><kbd>drag</kbd> orbit</span>
+    <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> turn</span>
+    <span><kbd>Q</kbd><kbd>E</kbd> zoom</span>
+    <span><kbd>scroll</kbd> dolly</span>
+    <span><kbd>click</kbd> valve</span>
+    <span><kbd>space</kbd> steam</span>
+    <span><kbd>P</kbd> pause</span>
+    <span><kbd>R</kbd> reset</span>
+  </div>
+
+  <div id="help-card" role="dialog" aria-label="How to explore" hidden>
+    <h2>How to explore</h2>
+    <ul>
+      <li><b>Drag</b> anywhere to orbit the camera around the cafe.</li>
+      <li><b>W A S D</b> or the arrow keys turn the view; <b>Q / E</b> zoom in and out.</li>
+      <li><b>Scroll</b> to dolly. The camera is fully interactive in three dimensions.</li>
+      <li><b>Click the red valve</b> on the espresso machine to release steam.</li>
+      <li><b>Night mode</b> dims the room and lights the warm cafe lamps.</li>
+      <li><b>Sound</b> is strictly off until you explicitly press the button; no audio ever autoplays.</li>
+      <li><b>Export</b> downloads the whole procedural diorama as an OBJ or STL mesh.</li>
+      <li><b>Scene diagnostics</b> reports exact surface area, enclosed volume, gear ratios, foam statistics and a stable field signature. Every value comes from the pure geometry engine.</li>
+      <li><b>P</b> pauses motion, <b>R</b> resets the camera, and the scene seed input rebuilds the whole crystal garden deterministically.</li>
+      <li><b>H</b> toggles this card, <b>Esc</b> closes it, and the <b>Keyboard shortcuts</b> switch in the panel turns every single-key control off.</li>
+    </ul>
+    <button id="btn-help-close" class="primary" type="button">Got it</button>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <noscript><p class="noscript">LatteLattice 3D needs JavaScript and WebGL to render the diorama.</p></noscript>
+</div>
+
+<script type="module" src="./scene.js"></script>
+</body>
+</html>
