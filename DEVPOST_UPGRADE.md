@@ -59,7 +59,7 @@ Surface area and volume scale checks pass at the square and cube of uniform scal
 
 ## Devpost description
 
-**LatteLattice 3D: a kinetic cafe diorama you can measure.** A single integer seed generates every crystal, gear tooth, latte ripple and steam particle in an offline WebGL scene. The same pure engine that builds the geometry also computes exact surface area, enclosed volume, gear ratios and foam statistics, so every readout is reproducible rather than decorative. Orbit the camera, open the steam valve, switch pour styles, enter a new scene seed, pause motion and export the whole diorama as OBJ or STL. Zero network requests, one bundled local asset, 132 passing tests.
+**LatteLattice 3D: a kinetic cafe diorama you can measure.** A single integer seed generates every crystal, gear tooth, latte ripple and steam particle in an offline WebGL scene. The same pure engine that builds the geometry also computes exact surface area, enclosed volume, gear ratios and foam statistics, so every readout is reproducible rather than decorative. Orbit the camera, open the steam valve, switch pour styles, enter a new scene seed, pause motion and export the whole diorama as OBJ or STL. Zero network requests, one bundled local asset, 186 passing tests.
 
 ## What's next
 
