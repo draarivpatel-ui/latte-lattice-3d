@@ -4,6 +4,8 @@
 
 Serve the folder with any static file server and open `index.html`. The page uses native ES modules, which browsers do not load over `file://`, so one local command is needed, for example `python3 -m http.server 8080` then `http://localhost:8080/`. There is no build step, no package install, no network request and no account. The only local asset is a bundled copy of Three.js.
 
+**Live demo:** [https://aariv.me/latte-lattice-3d/](https://aariv.me/latte-lattice-3d/)
+
 ## Try it in five seconds
 
 | Control | What it does |
