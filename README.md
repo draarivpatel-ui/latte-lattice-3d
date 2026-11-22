@@ -1,6 +1,6 @@
 # LatteLattice 3D
 
-**A kinetic cafe diorama you can measure.** LatteLattice 3D is a fully offline WebGL scene with a deterministic pure JavaScript geometry engine underneath it. Every crystal, gear tooth, latte art ripple and steam particle is generated from a seed, and every number shown in the interface is computed from that same geometry rather than typed in by hand.
+**A kinetic cafe diorama you can measure, with a crystallography lab inside.** LatteLattice 3D is a fully offline WebGL scene with two deterministic pure JavaScript engines underneath it. Every crystal, gear tooth, latte art ripple and steam particle is generated from a seed, and every number shown in the interface is computed from that same geometry rather than typed in by hand. A second module turns the page into a solid-state physics bench: real powder X-ray diffraction, reciprocal lattices, first Brillouin zones, packing factors, theoretical densities and crystallographic file exports.
 
 Serve the folder with any static file server and open `index.html`. The page uses native ES modules, which browsers do not load over `file://`, so one local command is needed, for example `python3 -m http.server 8080` then `http://localhost:8080/`. There is no build step, no package install, no network request and no account. The only local asset is a bundled copy of Three.js.
 
@@ -35,6 +35,21 @@ All math lives in `engine.js`, which has no dependency on Three.js, the DOM or t
 
 The renderer in `scene.js` turns those pure results into Three.js buffer geometries, a custom crystal shader, a displaced and vertex-colored fluid surface, and all DOM controls. It reads the diagnostics from the engine; it does not invent them.
 
+## Crystal Lab
+
+Press **X** or the **Crystal Lab** button to open the lab overlay. It runs on `crystal.js`, a second pure module with no dependency on Three.js or the DOM, and renders into its own WebGL viewport.
+
+- **Six real structures.** Polonium (simple cubic), iron (body-centred cubic), copper (face-centred cubic), silicon (diamond cubic), sodium chloride (rocksalt) and magnesium (hexagonal close-packed), each with literature lattice parameters, atomic radii and molar masses.
+- **Powder XRD simulator.** Exact Bragg angles `2theta = 2 arcsin(lambda / 2 d_hkl)`, geometric structure factors `|F(hkl)|^2` with real basis scattering, systematic extinction rules per lattice (BCC `h+k+l` even, FCC `h,k,l` unmixed, diamond unmixed plus `h+k+l` a multiple of 4 when all even, HCP `(h-k)` divisible by 3 with odd `l` extinct), multiplicity and Lorentz-polarization weighting. Cu Ka, Mo Ka and Co Ka radiation are selectable.
+- **Clickable spectrum.** Clicking any diffraction peak highlights the exact `(hkl)` Miller family on the 3D crystal as a translucent plane through the unit cell, with coincident families stacked in one chip.
+- **Reciprocal space.** One button switches the viewport to the reciprocal lattice: `b1, b2, b3` basis arrows satisfying `a_i . b_j = 2 pi delta_ij`, the reciprocal point cloud and the first Brillouin zone polyhedron (14 faces and 24 vertices for FCC), with its exact volume `(2 pi)^3 / V_primitive` reported.
+- **Packing and density.** Unit-cell volume, coordination number, atomic packing factor (SC 52.36 %, BCC 68.02 %, FCC 74.05 %, diamond 34.01 %, Mg 73.62 % from its real `c/a = 1.62` ratio) and theoretical density in g/cm^3, all derived from the cell and basis rather than stored constants.
+- **Exports.** One click downloads a `.cif` file (data block, cell parameters, the H-M space-group symbol, an identity-only symmetry record and the full conventional-cell atom list, so no reader can double the atoms), a CSV peak table with per-family intensities plus the summed observed-peak intensity in a `group_I_rel` column, carrying a SHA-256 fingerprint line, and a JSON audit report embedding the same fingerprint and the observed peak count. Byte-identical for identical input.
+- **Bookmarking.** The lab state (structure, wavelength, selected Miller indices and scene seed) lives in the URL hash, so `#lab=si&ka=mo&hkl=3,1,1&seed=77` restores a full view on load. Malformed hashes are ignored safely.
+- **In-page self-tests.** The Run Self-Tests button executes 41 named checks live in the page: Bragg-law reconstruction, FCC, BCC and diamond extinction rules, coincident-peak summation, reciprocal orthogonality, APF goldens, CIF skeleton markers and hash round-trip.
+
+The lab reads the garden's deterministic seed too: bookmarking captures it and restoring rewinds the cafe crystals to the same state.
+
 ## Scene diagnostics
 
 The Scene diagnostics panel reports values that are recomputed from the current seed twice per second:
@@ -67,41 +82,51 @@ Node.js 18 or newer is sufficient. No install is needed.
 npm test
 ```
 
-That command expands to `node --test test.js ui.test.js` and passes **186 tests, 0 failed, 0 skipped**:
+That command expands to `node --test test.js ui.test.js crystal.test.js` and passes **333 tests, 0 failed, 0 skipped**:
 
 | Suite | Tests | Coverage |
 | --- | --- | --- |
 | `test.js` | 148 | PRNG, vectors, surfaces, mesh builders, exact area and volume, gear ratios, field statistics, telemetry, camera, lighting, OBJ/STL export and deep regression pins |
-| `ui.test.js` | 38 | Real HTML contract, unique ids, resolved labels, every button and readout binding, keyboard shortcuts, deterministic readouts, content rules and engine export surface |
+| `ui.test.js` | 88 | Real HTML contract, unique ids, resolved labels, every button and readout binding, keyboard shortcuts, Crystal Lab DOM and wiring contracts, modal dialog and inert management, key blocking under the overlay, toast stacking, supercell and WebGL-failure latching contracts, deterministic readouts, content rules and engine export surface |
+| `crystal.test.js` | 97 | Lattice parameters, reciprocal basis orthogonality, primitive volumes, Brillouin zone faces, edges and volume, APF goldens, coordination, density, extinction rules, coincident-peak grouping, Bragg angles against literature peaks, Lorentz-polarization intensities, CIF generation and determinism, SHA-256 vectors, CSV and JSON fingerprints, hash round-trips and the shared self-test battery |
 
 Syntax verification:
 
 ```sh
 node --check engine.js
+node --check crystal.js
+node --check lab.js
 node --check scene.js
 node --check test.js
 node --check ui.test.js
+node --check crystal.test.js
 ```
 
-All four files pass. The test suite runs offline in about 0.1 seconds. No browser, WebGL context or screenshot is used by the automated checks; the DOM tests validate the shipped markup and wiring source as text plus the real engine module.
+All seven files pass. The Node suite runs offline in about 0.8 seconds; the DOM tests validate the shipped markup and wiring source as text plus the real engine modules.
+
+A separate headless Chromium audit drives the live page at 1440x900 and 390x844: it opens the lab, cycles all six presets, clicks a spectrum peak to light the Miller chip, switches wavelength, downloads the CIF, CSV and JSON exports, restores a bookmarked URL hash and runs the in-page self-test battery. 80 checks pass with zero console errors, zero uncaught page errors, zero external network requests and zero horizontal overflow.
 
 ## Honest scope
 
 - Geometry, lighting, shaders, camera control and exports are real. The cafe room, telemetry curves and pressure gauge are a visualized simulation, not measurements of a physical espresso machine.
+- The XRD pattern uses atomic numbers as scattering factors (the theta = 0 limit) with no angular form-factor falloff, thermal or absorption correction. Peak positions are exact; relative intensities are a kinematic teaching model rather than a Rietveld refinement.
 - The bundled Three.js module is the only runtime dependency. No CDN, font, analytics or remote asset is loaded.
 - The frame rate readout is a live local measurement. It varies by machine and is not a benchmark claim.
-- OBJ and STL exports are generated from the merged procedural meshes. They have not been opened in an external CAD or slicer during this verification run.
-- The WebGL rendering path is exercised by source and engine contract tests, not by an automated headless GPU capture.
+- OBJ, STL, CIF, CSV and JSON exports are generated locally in the page. The CIF output follows the conventional format but has not been re-opened in VESTA or Mercury during this verification run.
+- The WebGL rendering path is exercised by the headless Chromium audit described above in addition to source and engine contract tests.
 
 ## Project layout
 
 ```
-index.html        controls, help card, diagnostic readouts, canvas
-style.css         the whole visual system
+index.html        controls, help card, diagnostic readouts, canvas, Crystal Lab markup
+style.css         the whole visual system, including the lab overlay
 engine.js         pure deterministic geometry, kinematics and telemetry
+crystal.js        pure crystallography: lattices, reciprocal basis, BZ, XRD, CIF, SHA-256
 scene.js          Three.js renderer, shaders, animation and DOM wiring
+lab.js            Crystal Lab overlay: second WebGL view, spectrum, exports, hash state
 test.js           engine, regression and export tests
 ui.test.js        HTML and UI contract tests
+crystal.test.js   crystallography tests
 package.json      test script, no dependencies
 vendor/           bundled Three.js module
 ```

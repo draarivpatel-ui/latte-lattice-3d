@@ -4,8 +4,8 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="LatteLattice 3D, an interactive WebGL cafe diorama with a kinetic espresso machine, planetary grinder, and procedural crystal garden." />
-<title>LatteLattice 3D | A Kinetic Cafe Diorama</title>
+<meta name="description" content="LatteLattice 3D, an interactive WebGL cafe diorama with a kinetic espresso machine, planetary grinder, procedural crystal garden, and a crystallography lab with a real powder XRD simulator." />
+<title>LatteLattice 3D | Kinetic Cafe and Crystal Lab</title>
 <link rel="icon" href="data:," />
 <link rel="stylesheet" href="./style.css" />
 </head>
@@ -26,6 +26,9 @@
       </div>
     </div>
     <div class="top-actions">
+      <button id="btn-lab" class="pill" type="button" title="Open the Crystal Lab (X)">
+        <span class="pill-ico">&#9670;</span> <span id="lab-label">Crystal Lab</span>
+      </button>
       <button id="btn-night" class="pill" type="button" aria-pressed="false" title="Toggle cozy day / night lighting (L)">
         <span class="pill-ico">☾</span> <span id="night-label">Night mode</span>
       </button>
@@ -129,6 +132,7 @@
     <span><kbd>space</kbd> steam</span>
     <span><kbd>P</kbd> pause</span>
     <span><kbd>R</kbd> reset</span>
+    <span><kbd>X</kbd> lab</span>
   </div>
 
   <div id="help-card" role="dialog" aria-label="How to explore" hidden>
@@ -141,12 +145,113 @@
       <li><b>Night mode</b> dims the room and lights the warm cafe lamps.</li>
       <li><b>Sound</b> is strictly off until you explicitly press the button; no audio ever autoplays.</li>
       <li><b>Export</b> downloads the whole procedural diorama as an OBJ or STL mesh.</li>
+      <li><b>Crystal Lab</b> (top right, or <b>X</b>) opens the solid-state bench: real powder XRD spectra with clickable peaks that highlight Miller planes, a reciprocal lattice with the first Brillouin zone, packing and density readouts, CIF export, and fingerprinted CSV/JSON peak tables.</li>
       <li><b>Scene diagnostics</b> reports exact surface area, enclosed volume, gear ratios, foam statistics and a stable field signature. Every value comes from the pure geometry engine.</li>
       <li><b>P</b> pauses motion, <b>R</b> resets the camera, and the scene seed input rebuilds the whole crystal garden deterministically.</li>
       <li><b>H</b> toggles this card, <b>Esc</b> closes it, and the <b>Keyboard shortcuts</b> switch in the panel turns every single-key control off.</li>
     </ul>
     <button id="btn-help-close" class="primary" type="button">Got it</button>
   </div>
+
+  <section id="crystal-lab" role="dialog" aria-modal="true" aria-label="Crystal Lab" hidden>
+    <div class="lab-shell">
+      <header class="lab-head">
+        <h2>Crystal Lab</h2>
+        <p id="lab-hkl-chip">Click a peak to highlight its Miller plane</p>
+        <div class="lab-head-actions">
+          <button id="lab-copy-link" class="ghost" type="button">Copy link</button>
+          <button id="btn-lab-close" class="ghost" type="button">Close</button>
+        </div>
+      </header>
+      <div class="lab-body">
+        <div class="lab-stage">
+          <div class="lab-canvas-wrap">
+            <canvas id="lab-canvas" tabindex="0" aria-label="Interactive 3D crystal lattice view"></canvas>
+          </div>
+          <div class="lab-viewbar">
+            <button id="lab-view-direct" class="pill" type="button" aria-pressed="true">Real space</button>
+            <button id="lab-view-recip" class="pill" type="button" aria-pressed="false">Reciprocal</button>
+            <button id="lab-cells" class="pill" type="button">1 cell</button>
+            <button id="lab-spin" class="pill" type="button" aria-pressed="true">Spin</button>
+          </div>
+          <div class="lab-spectrum-wrap">
+            <canvas id="lab-spectrum" aria-label="Powder X-ray diffraction spectrum"></canvas>
+          </div>
+        </div>
+        <aside class="lab-side" aria-label="Crystal lab controls">
+          <section class="control-group lab-first">
+            <div class="group-head">
+              <span class="num">01</span><h3>Crystal</h3>
+            </div>
+            <label class="row" for="lab-structure"><span>Preset</span></label>
+            <select id="lab-structure">
+              <option value="po">Polonium, simple cubic</option>
+              <option value="fe">Iron, body centred cubic</option>
+              <option value="cu" selected>Copper, face centred cubic</option>
+              <option value="si">Silicon, diamond cubic</option>
+              <option value="nacl">Sodium chloride, rocksalt</option>
+              <option value="mg">Magnesium, hexagonal</option>
+            </select>
+            <div class="readout"><span>Material</span><b id="lab-structure-name">Copper</b></div>
+            <div class="readout"><span>Lattice / group</span><b id="lab-lattice"></b></div>
+            <div class="readout"><span>Cell</span><b id="lab-cell-param"></b></div>
+            <div class="readout"><span>Cell volume</span><b id="lab-cell-volume"></b></div>
+            <div class="readout"><span>Atoms per cell</span><b id="lab-atoms"></b></div>
+            <div class="readout"><span>Coordination</span><b id="lab-coord"></b></div>
+            <div class="readout"><span>Nearest neighbour</span><b id="lab-nn"></b></div>
+            <div class="readout"><span>Packing factor</span><b id="lab-apf"></b></div>
+            <div class="readout"><span>Density</span><b id="lab-density"></b></div>
+            <p class="hint" id="lab-note"></p>
+          </section>
+
+          <section class="control-group">
+            <div class="group-head">
+              <span class="num">02</span><h3>Reciprocal space</h3>
+            </div>
+            <div class="readout"><span>b1 b2 b3</span><b id="lab-bvec"></b></div>
+            <div class="readout"><span>Primitive cell</span><b id="lab-vprim"></b></div>
+            <div class="readout"><span>Brillouin zone</span><b id="lab-bz"></b></div>
+            <div class="readout"><span>BZ volume</span><b id="lab-bzvol"></b></div>
+          </section>
+
+          <section class="control-group">
+            <div class="group-head">
+              <span class="num">03</span><h3>Powder XRD</h3>
+            </div>
+            <label class="row" for="lab-lambda"><span>Radiation</span></label>
+            <select id="lab-lambda">
+              <option value="cu" selected>Cu K&#945; 1.5406 &#8491;</option>
+              <option value="mo">Mo K&#945; 0.7107 &#8491;</option>
+              <option value="co">Co K&#945; 1.7902 &#8491;</option>
+            </select>
+            <div class="lab-peak-head"><span>(h k l)</span><span>2&#952;</span><span>d &#8491;</span><span>I</span></div>
+            <div id="lab-peak-table" aria-label="Diffraction peak table"></div>
+          </section>
+
+          <section class="control-group">
+            <div class="group-head">
+              <span class="num">04</span><h3>Export</h3>
+            </div>
+            <div class="export-row">
+              <button id="lab-export-cif" class="ghost" type="button">.cif</button>
+              <button id="lab-export-csv" class="ghost" type="button">Peaks .csv</button>
+              <button id="lab-export-json" class="ghost" type="button">Audit .json</button>
+            </div>
+            <p class="hint">The CIF lists the full conventional cell with an identity symmetry record, the standard conventional-cell CIF layout. The CSV and JSON carry a SHA-256 fingerprint of the peak table.</p>
+          </section>
+
+          <section class="control-group">
+            <div class="group-head">
+              <span class="num">05</span><h3>Self-tests</h3>
+            </div>
+            <button id="lab-selftest" class="primary" type="button">Run self-tests</button>
+            <div class="readout"><span>Result</span><b id="lab-selftest-count">not run yet</b></div>
+            <ul id="lab-selftest-list"></ul>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </section>
 
   <div id="toast" role="status" aria-live="polite"></div>
 

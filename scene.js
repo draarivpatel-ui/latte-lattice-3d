@@ -20,6 +20,7 @@ import {
   computeTelemetry, patternSignature,
   CUP_PROFILE, crystalWorldOffset, buildExportMeshes,
 } from './engine.js';
+import { initCrystalLab } from './lab.js';
 
 /* -------------------------------------------------------------------------- */
 /* Boot                                                                       */
@@ -731,6 +732,14 @@ window.addEventListener('keydown', (e) => {
   const tag = (e.target && e.target.tagName) || '';
   if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
   if (!keysEnabled) return;
+  // X always toggles the lab; while it is open nothing else may drive the
+  // hidden scene (the lab's Escape handler already ran in the capture phase).
+  if (e.key === 'x' || e.key === 'X') {
+    if (!e.repeat) { if (crystalLab.isOpen()) crystalLab.close(); else crystalLab.open(); }
+    e.preventDefault();
+    return;
+  }
+  if (crystalLab.isOpen()) return;
   const k = keyMap[e.key] || keyMap[e.key.toLowerCase()];
   if (k) { keys[k] = true; e.preventDefault(); return; }
   // Toggle shortcuts (valve, night, help, pause, reset) must not re-fire on
@@ -828,6 +837,7 @@ function regrowFromSeed(seed) {
   if (label) label.textContent = String(crystalSeed);
   buildCrystals(crystalSeed);
   toast('Crystal garden rebuilt from seed ' + crystalSeed);
+  if (crystalLab) crystalLab.noteSeed();
 }
 
 document.getElementById('btn-regrow').addEventListener('click', () => {
@@ -852,6 +862,20 @@ function resetCamera() {
   applyCamera();
   toast('Camera reset to the default orbit');
 }
+
+/* -------------------------------------------------------------------------- */
+/* Crystal Lab overlay: the solid-state physics bench. initCrystalLab reads   */
+/* location.hash for a bookmarked lab state and may restore a scene seed.     */
+/* Declared early because its own boot-restore can call regrowFromSeed.       */
+/* -------------------------------------------------------------------------- */
+
+let crystalLab = null;
+crystalLab = initCrystalLab({
+  toast,
+  getSeed: () => crystalSeed,
+  onSeed: (seed) => regrowFromSeed(seed),
+});
+document.getElementById('btn-lab').addEventListener('click', () => crystalLab.open());
 
 document.getElementById('btn-pause').addEventListener('click', togglePause);
 document.getElementById('btn-reset-cam').addEventListener('click', resetCamera);
