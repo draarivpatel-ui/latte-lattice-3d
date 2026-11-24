@@ -474,6 +474,11 @@ export function steamParticles(opts) {
     seed: 99,
     origin: [0, 0, 0],
   }, opts || {});
+  if (!Number.isFinite(o.life) || o.life <= 0) o.life = 2.6;
+  if (!Number.isFinite(o.t)) o.t = 0;
+  if (!Number.isFinite(o.rise)) o.rise = 0.9;
+  if (!Number.isFinite(o.spread) || o.spread < 0) o.spread = 0.35;
+  o.count = Math.max(0, Math.min(512, Math.floor(Number.isFinite(o.count) ? o.count : 48)));
   const rng = makeRng(o.seed);
   const out = [];
   const phase = [];

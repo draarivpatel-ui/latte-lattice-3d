@@ -5,7 +5,7 @@
   "description": "Kinetic WebGL cafe diorama with a deterministic pure-JS geometry engine, OBJ/STL export and auditable scene diagnostics.",
   "type": "module",
   "scripts": {
-    "test": "node --test test.js ui.test.js crystal.test.js"
+    "test": "node --test test.js ui.test.js crystal.test.js revamp-regression-2026-11-24.test.js"
   },
   "license": "MIT"
 }

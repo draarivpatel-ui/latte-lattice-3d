@@ -548,7 +548,14 @@ export function powderPattern(structureId, opts) {
  */
 export function reciprocalPoints(structureId, opts) {
   const s = STRUCTURES[structureId];
+  if (!s) throw new RangeError('unknown structure ' + structureId);
   const o = Object.assign({ maxIndex: 4, gMax: Infinity }, opts || {});
+  if (!Number.isInteger(o.maxIndex) || o.maxIndex < 1 || o.maxIndex > 24) {
+    throw new RangeError('maxIndex must be an integer between 1 and 24');
+  }
+  if (!(o.gMax > 0) && o.gMax !== Infinity) {
+    throw new RangeError('gMax must be positive or Infinity');
+  }
   const [b1, b2, b3] = reciprocalBasis(structureId);
   const out = [];
   for (let h = -o.maxIndex; h <= o.maxIndex; h++) {
@@ -729,7 +736,14 @@ export function atomsInCell(structureId) {
  */
 export function displayAtoms(structureId, opts) {
   const s = STRUCTURES[structureId];
+  if (!s) throw new RangeError('unknown structure ' + structureId);
   const o = Object.assign({ cells: 1, margin: 0 }, opts || {});
+  if (!Number.isInteger(o.cells) || o.cells < 1 || o.cells > 4) {
+    throw new RangeError('cells must be an integer between 1 and 4');
+  }
+  if (!Number.isFinite(o.margin) || o.margin < 0 || o.margin > 4) {
+    throw new RangeError('margin must be finite and between 0 and 4');
+  }
   const [a1, a2, a3] = cellVectors(structureId);
   const out = [];
   const seen = new Set();
@@ -869,12 +883,16 @@ function utf8Bytes(str) {
   const out = [];
   for (let i = 0; i < str.length; i++) {
     let c = str.charCodeAt(i);
-    if (c >= 0xd800 && c <= 0xdbff && i + 1 < str.length) {
-      const c2 = str.charCodeAt(i + 1);
+    if (c >= 0xd800 && c <= 0xdbff) {
+      const c2 = i + 1 < str.length ? str.charCodeAt(i + 1) : 0;
       if (c2 >= 0xdc00 && c2 <= 0xdfff) {
         c = 0x10000 + ((c - 0xd800) << 10) + (c2 - 0xdc00);
         i++;
+      } else {
+        c = 0xfffd;
       }
+    } else if (c >= 0xdc00 && c <= 0xdfff) {
+      c = 0xfffd;
     }
     if (c < 0x80) out.push(c);
     else if (c < 0x800) out.push(0xc0 | (c >> 6), 0x80 | (c & 0x3f));
