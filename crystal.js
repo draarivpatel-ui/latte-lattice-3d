@@ -462,6 +462,12 @@ export function powderPattern(structureId, opts) {
   const s = STRUCTURES[structureId];
   if (!s) throw new RangeError('unknown structure ' + structureId);
   const o = Object.assign({ lambda: 1.5406, twoThetaMin: 5, twoThetaMax: 90, maxIndex: 12 }, opts || {});
+  if (!Number.isFinite(o.lambda) || o.lambda <= 0) throw new RangeError('lambda must be a positive finite angstrom value');
+  if (!Number.isFinite(o.twoThetaMin) || !Number.isFinite(o.twoThetaMax) || o.twoThetaMin >= o.twoThetaMax) {
+    throw new RangeError('twoTheta scan limits must be finite and strictly increasing');
+  }
+  if (!Number.isFinite(o.maxIndex) || Math.floor(o.maxIndex) < 1) throw new RangeError('maxIndex must be a positive finite integer');
+  o.maxIndex = Math.floor(o.maxIndex);
   const hex = s.system === 'hexagonal';
   const reps = [];
   if (hex) {

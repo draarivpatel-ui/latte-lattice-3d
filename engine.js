@@ -42,8 +42,9 @@ export function hashString(str) {
   return h >>> 0;
 }
 
-/** Clamp x into [lo, hi]. */
+/** Clamp x into [lo, hi]. NaN degrades to the lower endpoint. */
 export function clamp(x, lo, hi) {
+  if (Number.isNaN(x)) return lo;
   return x < lo ? lo : (x > hi ? hi : x);
 }
 

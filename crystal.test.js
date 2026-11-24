@@ -976,3 +976,14 @@ test('hcp reciprocal lattice is hexagonal too', () => {
   approx(gAxial, TAU / 5.2105, 1e-9);
   assert.ok(gAxial < gMin);
 });
+
+test('regression: powderPattern rejects malformed scan options instead of silent nonsense', () => {
+  for (const opts of [
+    { lambda: NaN }, { lambda: Infinity }, { lambda: 0 }, { lambda: -1 },
+    { twoThetaMin: NaN }, { twoThetaMax: Infinity },
+    { twoThetaMin: 50, twoThetaMax: 50 }, { twoThetaMin: 80, twoThetaMax: 20 },
+    { maxIndex: 0 }, { maxIndex: NaN },
+  ]) {
+    assert.throws(() => C.powderPattern('cu', opts), RangeError, JSON.stringify(opts));
+  }
+});

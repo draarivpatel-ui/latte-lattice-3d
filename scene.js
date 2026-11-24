@@ -581,7 +581,8 @@ let crystalSeed = 2026;
 let latestTelemetry = null;
 let frameCount = 0;
 let performanceElapsedMs = 0;
-let paused = false;
+const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let paused = reduceMotion;
 
 function buildCrystals(seed) {
   // Dispose old
@@ -726,7 +727,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) clear
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     const card = document.getElementById('help-card');
-    if (card && !card.hidden) { card.hidden = true; e.preventDefault(); }
+    if (card && !card.hidden) { setHelpVisibility(false); e.preventDefault(); }
     return;
   }
   const tag = (e.target && e.target.tagName) || '';
@@ -795,16 +796,26 @@ function toggleNight() {
   toast(on ? 'Cozy night lighting' : 'Bright day lighting');
 }
 
+function setHelpVisibility(open) {
+  const card = document.getElementById('help-card');
+  const helpBtn = document.getElementById('btn-help');
+  const helpClose = document.getElementById('btn-help-close');
+  card.hidden = !open;
+  helpBtn.setAttribute('aria-expanded', String(open));
+  if (open) helpClose.focus();
+  else if (document.activeElement === helpClose || card.contains(document.activeElement)) helpBtn.focus();
+}
+
 function toggleHelp() {
   const card = document.getElementById('help-card');
-  card.hidden = !card.hidden;
+  setHelpVisibility(card.hidden);
 }
 
 document.getElementById('btn-night').addEventListener('click', toggleNight);
 document.getElementById('btn-sound').addEventListener('click', toggleSound);
 document.getElementById('btn-help').addEventListener('click', toggleHelp);
 document.getElementById('btn-help-close').addEventListener('click', () => {
-  document.getElementById('help-card').hidden = true;
+  setHelpVisibility(false);
 });
 document.getElementById('btn-steam').addEventListener('click', () => setValve(!valveOpen));
 
@@ -847,15 +858,21 @@ document.getElementById('crystal-seed').addEventListener('change', (e) => {
   regrowFromSeed(e.target.value);
 });
 
-function togglePause() {
-  paused = !paused;
+function syncPauseButton() {
   const btn = document.getElementById('btn-pause');
   if (btn) {
     btn.setAttribute('aria-pressed', String(paused));
     btn.textContent = paused ? 'Resume motion' : 'Pause motion';
   }
+}
+
+function togglePause() {
+  paused = !paused;
+  syncPauseButton();
   toast(paused ? 'Motion paused; diagnostics stay live' : 'Motion resumed');
 }
+
+syncPauseButton();
 
 function resetCamera() {
   camState = { yaw: 0.62, pitch: 0.34, radius: 10.5, target: [0, 1.7, 0] };

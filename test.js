@@ -1123,3 +1123,9 @@ test('regression: buildExportMeshes is deterministic and includes the cup', () =
   assert.ok(E.meshSurfaceArea(merged) > 100);
   assert.ok(E.degenerateTriangleCount(merged) === 0);
 });
+
+test('regression: clamp never leaks NaN and clamps infinities to the endpoints', () => {
+  assert.equal(E.clamp(NaN, 0, 1), 0);
+  assert.equal(E.clamp(Infinity, 0, 1), 1);
+  assert.equal(E.clamp(-Infinity, 0, 1), 0);
+});

@@ -633,3 +633,32 @@ test('UI 87: WebGL failure latches instead of retrying every apply', () => {
 test('UI 88: the missing-markup lab stub exposes the full public surface', () => {
   assert.match(lab, /if \(!overlay\) return \{ isOpen: \(\) => false, close: \(\) => \{\}, open: \(\) => \{\}, noteSeed: \(\) => \{\} \}/);
 });
+
+test('UI 89: keyboard users get a working skip link to the scene controls', () => {
+  assert.match(html, /<a class="skip-link" href="#panel">Skip to scene controls<\/a>/);
+  assert.match(html, /<aside id="panel" tabindex="-1" aria-label="Scene controls">/);
+  assert.match(css, /\.skip-link/);
+  assert.match(css, /\.skip-link:focus/);
+});
+
+test('UI 90: reduced-motion users start paused and CSS motion is disabled', () => {
+  assert.match(scene, /prefers-reduced-motion: reduce/);
+  assert.match(scene, /syncPauseButton\(\)/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+});
+
+test('UI 91: the help dialog exposes expanded state and manages focus', () => {
+  assert.match(html, /id="btn-help"[^>]*aria-controls="help-card"[^>]*aria-expanded="false"/);
+  assert.match(scene, /function setHelpVisibility\(open\)/);
+  assert.match(scene, /helpClose\.focus\(\)/);
+  assert.match(scene, /helpBtn\.focus\(\)/);
+});
+
+test('UI 92: functional copy and controls respect the 12px legibility floor', () => {
+  const offenders = [];
+  for (const m of css.matchAll(/font-size:\s*(0\.\d+)rem/g)) {
+    if (Number(m[1]) < 0.75) offenders.push(m[1]);
+  }
+  assert.deepEqual(offenders, []);
+  assert.match(css, /\.footnote[^}]*color:\s*rgba\(244,231,211,0\.6[0-9]\)/);
+});

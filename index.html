@@ -11,6 +11,7 @@
 </head>
 <body>
 <div id="app">
+  <a class="skip-link" href="#panel">Skip to scene controls</a>
   <canvas id="scene" tabindex="0" aria-label="Interactive 3D cafe diorama"></canvas>
 
   <div id="loading" role="status" aria-live="polite">
@@ -35,11 +36,11 @@
       <button id="btn-sound" class="pill" type="button" aria-pressed="false" title="Unmute ambient cafe sound (requires a click)">
         <span class="pill-ico">♪</span> <span id="sound-label">Sound off</span>
       </button>
-      <button id="btn-help" class="pill" type="button" title="Show controls (H)">?</button>
+      <button id="btn-help" class="pill" type="button" aria-controls="help-card" aria-expanded="false" title="Show controls (H)">?</button>
     </div>
   </header>
 
-  <aside id="panel" aria-label="Scene controls">
+  <aside id="panel" tabindex="-1" aria-label="Scene controls">
     <h2>The Workshop</h2>
 
     <section class="control-group">
