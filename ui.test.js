@@ -111,6 +111,7 @@ test('UI 11: keyboard shortcuts are documented and bound', () => {
     assert.ok(scene.includes(`e.key === '${key}'`), `missing ${key} shortcut`);
   }
   assert.ok(scene.includes("e.key === ' '"), 'missing space shortcut');
+  assert.match(scene, /\/\^\(INPUT\|SELECT\|TEXTAREA\|BUTTON\|A\)\$\/\.test\(tag\)/);
   assert.ok(html.includes('<kbd>space</kbd>'));
   assert.ok(html.includes('<kbd>P</kbd>'));
   assert.ok(html.includes('<kbd>R</kbd>'));
@@ -645,6 +646,7 @@ test('UI 90: reduced-motion users start paused and CSS motion is disabled', () =
   assert.match(scene, /prefers-reduced-motion: reduce/);
   assert.match(scene, /syncPauseButton\(\)/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.ok(css.indexOf('@media (prefers-reduced-motion: reduce)') > css.lastIndexOf('transition:'), 'reduced-motion override must follow transition rules');
 });
 
 test('UI 91: the help dialog exposes expanded state and manages focus', () => {

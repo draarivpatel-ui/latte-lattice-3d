@@ -731,7 +731,7 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   const tag = (e.target && e.target.tagName) || '';
-  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+  if (/^(INPUT|SELECT|TEXTAREA|BUTTON|A)$/.test(tag)) return;
   if (!keysEnabled) return;
   // X always toggles the lab; while it is open nothing else may drive the
   // hidden scene (the lab's Escape handler already ran in the capture phase).

@@ -82,13 +82,14 @@ Node.js 18 or newer is sufficient. No install is needed.
 npm test
 ```
 
-That command expands to `node --test test.js ui.test.js crystal.test.js` and passes **333 tests, 0 failed, 0 skipped**:
+That command expands to `node --test test.js ui.test.js crystal.test.js revamp-regression-2026-11-24.test.js` and passes **343 tests, 0 failed, 0 skipped**:
 
 | Suite | Tests | Coverage |
 | --- | --- | --- |
 | `test.js` | 148 | PRNG, vectors, surfaces, mesh builders, exact area and volume, gear ratios, field statistics, telemetry, camera, lighting, OBJ/STL export and deep regression pins |
-| `ui.test.js` | 88 | Real HTML contract, unique ids, resolved labels, every button and readout binding, keyboard shortcuts, Crystal Lab DOM and wiring contracts, modal dialog and inert management, key blocking under the overlay, toast stacking, supercell and WebGL-failure latching contracts, deterministic readouts, content rules and engine export surface |
+| `ui.test.js` | 92 | Real HTML contract, unique ids, resolved labels, every button and readout binding, keyboard shortcuts, Crystal Lab DOM and wiring contracts, modal dialog and inert management, key blocking under the overlay, toast stacking, supercell and WebGL-failure latching contracts, deterministic readouts, content rules and engine export surface |
 | `crystal.test.js` | 97 | Lattice parameters, reciprocal basis orthogonality, primitive volumes, Brillouin zone faces, edges and volume, APF goldens, coordination, density, extinction rules, coincident-peak grouping, Bragg angles against literature peaks, Lorentz-polarization intensities, CIF generation and determinism, SHA-256 vectors, CSV and JSON fingerprints, hash round-trips and the shared self-test battery |
+| `revamp-regression-2026-11-24.test.js` | 6 | Revamp regression guards |
 
 Syntax verification:
 
@@ -100,9 +101,10 @@ node --check scene.js
 node --check test.js
 node --check ui.test.js
 node --check crystal.test.js
+node --check revamp-regression-2026-11-24.test.js
 ```
 
-All seven files pass. The Node suite runs offline in about 0.8 seconds; the DOM tests validate the shipped markup and wiring source as text plus the real engine modules.
+All eight files pass. The Node suite runs offline in about 0.8 seconds; the DOM tests validate the shipped markup and wiring source as text plus the real engine modules.
 
 A separate headless Chromium audit drives the live page at 1440x900 and 390x844: it opens the lab, cycles all six presets, clicks a spectrum peak to light the Miller chip, switches wavelength, downloads the CIF, CSV and JSON exports, restores a bookmarked URL hash and runs the in-page self-test battery. 80 checks pass with zero console errors, zero uncaught page errors, zero external network requests and zero horizontal overflow.
 

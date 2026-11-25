@@ -46,15 +46,6 @@ html, body {
 .skip-link:focus { transform: translateY(0); outline: 2px solid var(--cream); outline-offset: 2px; }
 #panel:focus { outline: 2px solid var(--accent-soft); outline-offset: 3px; }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.001ms !important;
-  }
-}
-
 /* ------------------------------- loading -------------------------------- */
 #loading {
   position: absolute; inset: 0;
@@ -236,7 +227,7 @@ kbd {
   #panel { top: auto; bottom: 64px; left: 12px; width: min(270px, calc(100vw - 24px)); max-height: 46vh; padding: 14px; }
   .brand h1 { font-size: 1rem; }
   #topbar { padding: 12px; }
-  #hint-bar { font-size: 0.75rem; gap: 8px; padding: 8px 14px; }
+  #hint-bar { display: none; }
 }
 
 /* ------------------------------ crystal lab ------------------------------ */
@@ -369,4 +360,13 @@ kbd {
     padding: 4px 14px 14px;
   }
   .peak-row, .lab-peak-head { font-size: 0.75rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
 }
