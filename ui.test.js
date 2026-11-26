@@ -205,7 +205,7 @@ test('UI 22: styles define the number input and tabular numerics', () => {
 });
 
 test('UI 23: package.json exposes the full test command', () => {
-  assert.equal(pkg.scripts.test, 'node --test test.js ui.test.js crystal.test.js revamp-regression-2026-11-24.test.js');
+  assert.equal(pkg.scripts.test, 'node --test test.js ui.test.js crystal.test.js revamp-regression-2026-11-24.test.js static-integrity.test.cjs');
   assert.equal(pkg.type, 'module');
 });
 

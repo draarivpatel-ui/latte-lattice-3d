@@ -370,3 +370,36 @@ kbd {
     transition-duration: 0.001ms !important;
   }
 }
+
+@media print {
+  @page { margin: 0.5in; }
+  :root {
+    --cream: #111; --espresso: #111; --coffee: #222; --latte: #333;
+    --panel: #fff; --stroke: #888; --accent: #444; --accent-soft: #333;
+  }
+  html, body { height: auto !important; overflow: visible !important; background: #fff !important; color: #111 !important; }
+  #app { width: auto !important; height: auto !important; }
+  #scene { position: static; width: 100% !important; height: auto !important; max-height: 5in; background: #fff; border: 1px solid #999; }
+  .skip-link, #loading, .top-actions, #hint-bar, #help-card, #toast,
+  .lab-viewbar, .lab-head-actions, .export-row, .pill, .primary, .ghost, input, select { display: none !important; }
+  #topbar { position: static !important; color: #111 !important; background: #fff !important; }
+  #panel {
+    position: static !important; width: auto !important; max-height: none !important;
+    overflow: visible !important; background: #fff !important; color: #111 !important;
+    border-color: #888 !important; box-shadow: none !important; backdrop-filter: none !important;
+  }
+  #crystal-lab { position: static !important; background: #fff !important; padding: 0 !important; }
+  .lab-shell {
+    width: auto !important; height: auto !important; overflow: visible !important;
+    background: #fff !important; color: #111 !important; border-color: #888 !important;
+    box-shadow: none !important; backdrop-filter: none !important;
+  }
+  .lab-body, .lab-stage, .lab-side { display: block !important; height: auto !important; max-width: none !important; overflow: visible !important; }
+  .lab-side { border: 0 !important; }
+  .lab-canvas-wrap { height: 3.5in !important; overflow: visible !important; background: #fff !important; border-color: #888 !important; }
+  #lab-canvas { height: 100% !important; }
+  #lab-peak-table, #lab-selftest-list { max-height: none !important; overflow: visible !important; }
+  .peak-row, .peak-row .m, .peak-row span:not(.m), #lab-hkl-chip, .hint, .readout, .row { color: #111 !important; }
+  .peak-row { background: #fff !important; border-color: #aaa !important; }
+  .control-group { border-color: #888 !important; }
+}

@@ -82,7 +82,7 @@ Node.js 18 or newer is sufficient. No install is needed.
 npm test
 ```
 
-That command expands to `node --test test.js ui.test.js crystal.test.js revamp-regression-2026-11-24.test.js` and passes **343 tests, 0 failed, 0 skipped**:
+That command expands to `node --test test.js ui.test.js crystal.test.js revamp-regression-2026-11-24.test.js static-integrity.test.cjs` and passes **344 tests, 0 failed, 0 skipped**:
 
 | Suite | Tests | Coverage |
 | --- | --- | --- |
@@ -90,6 +90,7 @@ That command expands to `node --test test.js ui.test.js crystal.test.js revamp-r
 | `ui.test.js` | 92 | Real HTML contract, unique ids, resolved labels, every button and readout binding, keyboard shortcuts, Crystal Lab DOM and wiring contracts, modal dialog and inert management, key blocking under the overlay, toast stacking, supercell and WebGL-failure latching contracts, deterministic readouts, content rules and engine export surface |
 | `crystal.test.js` | 97 | Lattice parameters, reciprocal basis orthogonality, primitive volumes, Brillouin zone faces, edges and volume, APF goldens, coordination, density, extinction rules, coincident-peak grouping, Bragg angles against literature peaks, Lorentz-polarization intensities, CIF generation and determinism, SHA-256 vectors, CSV and JSON fingerprints, hash round-trips and the shared self-test battery |
 | `revamp-regression-2026-11-24.test.js` | 6 | Revamp regression guards |
+| `static-integrity.test.cjs` | 1 | Static markup, ARIA reference, local asset, offline runtime, print and focus regression guard |
 
 Syntax verification:
 
